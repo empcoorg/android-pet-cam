@@ -1,0 +1,8 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <!-- Plain dot — this is the status-bar icon, visible almost any time recording is active,
+         so it matters most for not drawing attention. -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M12,12 m-6,0 a6,6 0 1 0 12,0 a6,6 0 1 0 -12,0" />
+</vector>

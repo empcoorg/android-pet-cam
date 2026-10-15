@@ -1,0 +1,16 @@
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+app/build
+app/keys.properties
+cloudflare/node_modules
+cloudflare/.wrangler
+cloudflare/worker-configuration.d.ts
+cloudflare/.dev.vars
+cloudflare/wrangler.jsonc

@@ -1,0 +1,15 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- Plain, centered, monochrome-gray building outline with a rounded roofline. -->
+    <!-- Building body: x 36-72, y 34-74 — centered on the 108x108 canvas. -->
+    <path android:fillColor="#7A828C"
+        android:pathData="M36,74 L36,40 A6,6 0 0 1 42,34 L66,34 A6,6 0 0 1 72,40 L72,74 Z" />
+    <!-- Window grid (two rows, three columns) -->
+    <path android:fillColor="#AAB0B8"
+        android:pathData="M40,40 h6 v7 h-6 z M51,40 h6 v7 h-6 z M62,40 h6 v7 h-6 z
+                           M40,52 h6 v7 h-6 z M51,52 h6 v7 h-6 z M62,52 h6 v7 h-6 z" />
+    <!-- Door -->
+    <path android:fillColor="#5A6068"
+        android:pathData="M48,64 h12 v10 h-12 z" />
+</vector>
