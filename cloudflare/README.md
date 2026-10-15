@@ -30,9 +30,9 @@ cp wrangler.jsonc.template wrangler.jsonc   # then edit the placeholders
 Create the backing services (names must match your `wrangler.jsonc`):
 
 ```bash
-npx wrangler r2 bucket create security-cam-<name>-clips
-npx wrangler d1 create security-cam-<name>-catalog     # paste the printed database_id into wrangler.jsonc
-npx wrangler d1 execute security-cam-<name>-catalog --remote --file schema.sql
+npx wrangler r2 bucket create pet-cam-<name>-clips
+npx wrangler d1 create pet-cam-<name>-catalog     # paste the printed database_id into wrangler.jsonc
+npx wrangler d1 execute pet-cam-<name>-catalog --remote --file schema.sql
 ```
 
 Set the secrets:

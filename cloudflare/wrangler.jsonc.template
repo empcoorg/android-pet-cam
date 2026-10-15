@@ -2,24 +2,24 @@
   // Wrangler config for one camera's Worker. Copy this file to wrangler.jsonc (git-ignored),
   // fill in the placeholders, and deploy from this directory with: npm run deploy
   // See cloudflare/README.md for the full walkthrough.
-  "name": "security-cam-<name>",
+  "name": "pet-cam-<name>",
   "main": "src/index.ts",
   "compatibility_date": "2026-10-05",
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true, "head_sampling_rate": 1 },
 
-  // Create with: npx wrangler r2 bucket create security-cam-<name>-clips
-  "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "security-cam-<name>-clips" }],
+  // Create with: npx wrangler r2 bucket create pet-cam-<name>-clips
+  "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "pet-cam-<name>-clips" }],
 
   // Workers AI runs importance detection (vision model) on uploaded photos. Optional — remove
   // this block and the digest simply lists clips/photos without AI labels.
   "ai": { "binding": "AI" },
 
   // Catalog of clips/photos and trusted browsers. Create with:
-  //   npx wrangler d1 create security-cam-<name>-catalog
+  //   npx wrangler d1 create pet-cam-<name>-catalog
   // then paste the printed database_id below, and apply the schema:
-  //   npx wrangler d1 execute security-cam-<name>-catalog --remote --file schema.sql
-  "d1_databases": [{ "binding": "DB", "database_name": "security-cam-<name>-catalog", "database_id": "<PASTE_D1_ID_HERE>" }],
+  //   npx wrangler d1 execute pet-cam-<name>-catalog --remote --file schema.sql
+  "d1_databases": [{ "binding": "DB", "database_name": "pet-cam-<name>-catalog", "database_id": "<PASTE_D1_ID_HERE>" }],
 
   // Transactional email for the daily digest and offline alerts (sender domain must be
   // onboarded to Email Sending). Optional — remove this block to disable email entirely.
@@ -41,12 +41,12 @@
     // Optional email digest/alerts — leave blank (and remove send_email) to disable.
     "DIGEST_TO": "<your-email>",
     "DIGEST_FROM": "<sender@your-onboarded-domain>",
-    "PUBLIC_URL": "https://security-cam-<name>.<your-subdomain>.workers.dev",
+    "PUBLIC_URL": "https://pet-cam-<name>.<your-subdomain>.workers.dev",
     // Camera's local time zone offset in minutes (file names use local time).
     "CAMERA_UTC_OFFSET_MINUTES": "0",
     // Email DIGEST_TO when the camera has not reported for this long (reminder every 12h, and a back-online email).
     "OFFLINE_ALERT_MINUTES": "10",
-    // Shown in the authenticator app during TOTP enrollment, e.g. "Security Cam (kitchen)".
+    // Shown in the authenticator app during TOTP enrollment, e.g. "Pet Cam (kitchen)".
     "CAMERA_LABEL": "<name>"
   }
 

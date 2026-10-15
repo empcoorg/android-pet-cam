@@ -20,7 +20,7 @@ export async function sendDeviceCommand(env: Env, command: object): Promise<numb
     return 0;
   }
 }
-const APK_KEY = "app/security-cam.apk";
+const APK_KEY = "app/pet-cam.apk";
 const APK_VERSION_KEY = "app/version.json";
 
 export default {
@@ -204,7 +204,7 @@ async function listAll(env: Env): Promise<R2Object[]> {
   return out;
 }
 
-/** The Android installer, uploaded with `wrangler r2 object put my-camera-clips/app/security-cam.apk`. */
+/** The Android installer, uploaded with `wrangler r2 object put my-camera-clips/app/pet-cam.apk`. */
 async function serveApk(env: Env): Promise<Response> {
   const obj = await env.BUCKET.get(APK_KEY);
   if (!obj) return json({ error: "apk not uploaded yet" }, 404);
@@ -212,7 +212,7 @@ async function serveApk(env: Env): Promise<Response> {
     headers: {
       "content-type": "application/vnd.android.package-archive",
       "content-length": String(obj.size),
-      "content-disposition": 'attachment; filename="security-cam.apk"',
+      "content-disposition": 'attachment; filename="pet-cam.apk"',
       "cache-control": "no-store",
     },
   });
@@ -470,9 +470,9 @@ async function handleTotpSetupGet(request: Request, env: Env): Promise<Response>
     setupCookie = await signedCookie(env, "totpsetup", secretBase32, SETUP_TTL_SECONDS);
   }
 
-  // Distinguish this deployment in the authenticator app (e.g. "Security Cam (kitchen)") since each
+  // Distinguish this deployment in the authenticator app (e.g. "Pet Cam (kitchen)") since each
   // camera is its own portal with its own TOTP secret. CAMERA_LABEL is set per environment.
-  const uri = otpauthUri(secretBase32, "viewer", `Security Cam (${env.CAMERA_LABEL ?? "camera"})`);
+  const uri = otpauthUri(secretBase32, "viewer", `Pet Cam (${env.CAMERA_LABEL ?? "camera"})`);
   const html = totpSetupPage(uri, secretBase32, renderQrSvg(uri), urlHasError(request));
   return htmlResponse(html, setupCookie ?? undefined);
 }

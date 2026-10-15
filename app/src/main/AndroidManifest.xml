@@ -22,12 +22,12 @@
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
-        android:name=".SecurityCamApp"
+        android:name=".PetCamApp"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/Theme.SecurityCam"
+        android:theme="@style/Theme.PetCam"
         tools:targetApi="34">
 
         <activity
@@ -46,7 +46,7 @@
         <activity
             android:name=".PlayerActivity"
             android:exported="false"
-            android:theme="@style/Theme.SecurityCam.Player" />
+            android:theme="@style/Theme.PetCam.Player" />
 
         <!-- Camera + mic foreground service. Started from the Activity (foreground) so
              Android 14/15 grants while-in-use camera/mic access that survives screen lock. -->

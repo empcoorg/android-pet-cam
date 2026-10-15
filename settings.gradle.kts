@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "android-security-cam"
+rootProject.name = "android-pet-cam"
 include(":app")

@@ -1,7 +1,9 @@
-# Android Security Cam
+# Android Pet Cam
 
-An old Android phone is worth almost nothing these days. It can become a **private, encrypted
-security camera** — no proprietary third-party servers, no accounts, no subscriptions. Footage is
+An old Android phone is worth almost nothing these days — but point it at your furry friends and
+it becomes a **private pet camera**. Check in on the cat from work, catch the dog mid-afternoon,
+or see who's been on the sofa — with a **live stream**, **motion-triggered video**, or **timed
+still images**. No proprietary third-party servers, no accounts, no subscriptions: footage is
 recorded to the phone's own storage (or its SD card) and stays there unless you choose a server
 to sync it to.
 
@@ -32,28 +34,30 @@ at all**.
    on *USB debugging* under the new *Developer options* menu (only needed once, to install the app).
 4. On first launch, grant **Camera**, **Microphone** and **Notifications**.
 5. In the app's *Settings* tab → *Battery* → **Disable battery optimisation**, and allow the
-   system prompt. (By hand: *Settings → Apps → Security Cam → Battery → Unrestricted*.)
-6. Press **Start** on the Camera tab. Recording continues with the screen off and the phone
-   locked. Set *Auto-start* in Settings so it resumes on its own after reboots and updates.
+   system prompt. (By hand: *Settings → Apps → Pet Cam → Battery → Unrestricted*.)
+6. Press **Start** on the Camera tab. Point the phone at your pet's favourite spot — recording
+   continues with the screen off and the phone locked. Set *Auto-start* in Settings so it
+   resumes on its own after reboots and updates.
 
-That's it: a self-contained camera recording to local storage. Browse footage on the phone in the
-**Clips** tab (play / save / share / delete), or pull files over USB:
+That's it: a self-contained pet camera recording to local storage. Browse clips on the phone in
+the **Clips** tab (play / save / share / delete), or pull files over USB:
 
 ```bash
-adb pull /sdcard/Android/data/org.empco.securitycam/files/ ./footage
+adb pull /sdcard/Android/data/org.empco.petcam/files/ ./footage
 ```
 
 ## Features
 
 | | |
 |---|---|
-| Records with the screen off / locked | Camera + microphone foreground service; survives screen lock |
-| Motion mode | Records while something moves, plus a configurable tail; stills on a cadence |
-| Continuous mode | Rolling clips (5 min default, configurable) |
-| Photo-only mode | Full-res stills only — for hardware too weak for video |
+| Watch your pets with the screen off / locked | Camera + microphone foreground service; survives screen lock |
+| Motion-triggered video | Records when your pet moves, plus a configurable tail; stills on a cadence |
+| Continuous video | Rolling clips (5 min default, configurable) — set it and forget |
+| Still images | Timed full-res photos — a step-by-step record of their day |
+| Live stream | Optional remote view, streamed only while you're watching |
 | Timestamp | Burned into the video, or drawn as an overlay on live view/stills (profile-dependent) |
 | Local storage | Built-in storage or SD card; oldest footage recycled only when free space runs low (or an optional fixed cap) |
-| Night vision | Automatic low-light boost from exposure/luma — never emits any light |
+| Night vision | Automatic low-light boost from exposure/luma — never emits any light, so it won't disturb sleeping pets |
 | Unattended operation | Restarts after reboot, app update and crashes; camera errors retry with backoff |
 | Clip list | Play / save to gallery / share / delete, on-device |
 | PIN lock | Optional PIN gates the app UI; recording keeps running either way |
@@ -74,16 +78,19 @@ device or configuration are greyed out with an explanation instead of silently d
 | Camera *Capability profile* options that repeatedly crashed | Retained but dimmed so you can retry deliberately; not recommended unattended |
 
 Retention defaults are conservative: the oldest clips/photos are deleted only when free space
-drops below the configured percentage (50% by default), so weeks of footage can accumulate on a
-64 GB phone.
+drops below the configured percentage (50% by default), so weeks of pet footage can accumulate on
+a 64 GB phone.
 
 ## Recording modes
 
 * **Motion** (default) — record only when the camera sees movement, then keep going for the
-  configured tail (15 s). Sensitivity is a 1–10 slider. Cheapest on battery and storage.
+  configured tail (15 s). Sensitivity is a 1–10 slider, so you can tune out a swinging curtain but
+  catch a cat hurtling down the hallway. Cheapest on battery and storage.
 * **Continuous** — rolling clips back to back regardless of motion (clip length configurable).
+  Best when you just want the whole afternoon available to scrub through.
 * **Photo-only** — no video stream at all; bursts of full-res stills while motion is detected,
-  tapering to a slow cadence. For hardware too weak to run the video pipeline reliably.
+  tapering to a slow cadence. A simple day-in-the-life sequence — and the right choice for
+  hardware too weak to run the video pipeline reliably.
 
 Media type (video vs photo-only) and trigger (motion vs continuous) are independent, so all four
 combinations are available.
@@ -91,11 +98,12 @@ combinations are available.
 ## Remote access (optional)
 
 Everything works with **zero cloud**: local recording, browsing, sharing and retention never touch
-a network. If you do want off-site backup or to check in from anywhere, the app speaks two simple,
-well-documented things to *your* server:
+a network. If you do want to check in on your pet from elsewhere — or keep an off-site copy — the
+app speaks two simple, well-documented things to *your* server:
 
 * file uploads over plain `HTTPS PUT` (with a bearer device token), and
-* a live view as a `WebSocket` of JPEG frames + JSON status, sent only while someone is watching.
+* a **live stream** as a `WebSocket` of JPEG frames + JSON status, sent only while someone is
+  watching.
 
 Any server you control can implement that — a NAS, a Raspberry Pi, a $5 VPS. As a suggestion, a
 complete, free-tier-friendly **Cloudflare Worker** is included in [`cloudflare/`](cloudflare/README.md):
@@ -103,7 +111,7 @@ password (+ optional TOTP) protected web view, R2 storage with retention, D1 cat
 email digests and offline alerts, and an APK download page for cable-free installs. Cloudflare is
 *one* option, not a requirement; nothing in the app depends on it.
 
-Rotating the device token on your server instantly cuts off a phone that was lost or stolen.
+Rotating the device token on your server instantly cuts off a phone that was lost or given away.
 
 ## Security model
 
@@ -120,7 +128,7 @@ Rotating the device token on your server instantly cuts off a phone that was los
 ## How it works
 
 ```
-android-security-cam/
+android-pet-cam/
 ├── app/           Android app (Kotlin, CameraX, Jetpack Compose) — open the repo root in Android Studio
 └── cloudflare/    Optional Worker: R2 uploads + retention, Durable Object live view, web UI
 ```

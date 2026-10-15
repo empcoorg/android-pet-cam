@@ -33,10 +33,10 @@ export async function sendCameraAlert(
   let subject: string; let lead: string;
   if (kind === "online") {
     const down = downSince ? minutes(now - downSince) : "a while";
-    subject = `Security Cam${label}: camera back online`;
+    subject = `Pet Cam${label}: camera back online`;
     lead = `The camera reconnected after being unreachable for about ${down}. Footage recorded while it was offline uploads automatically.`;
   } else {
-    subject = `Security Cam${label}: camera OFFLINE${kind === "reminder" ? " (still)" : ""}`;
+    subject = `Pet Cam${label}: camera OFFLINE${kind === "reminder" ? " (still)" : ""}`;
     lead = kind === "reminder"
       ? `The camera is still not reporting (down ${minutes(now - lastSeen)}).`
       : `The camera has not reported for ${minutes(now - lastSeen)}. It may still be recording locally if only the network is down; ` +

@@ -38,7 +38,7 @@ async function classify(env: Env, bytes: ArrayBuffer): Promise<{ important: bool
     const res = (await env.AI.run("@cf/llava-hf/llava-1.5-7b-hf", {
       image: [...new Uint8Array(bytes)],
       prompt:
-        "You are a security camera analyst. Briefly describe what you see. " +
+        "You are a pet camera analyst. Briefly describe what you see. " +
         "How many people are visible? Does the image contain a person, a vehicle, an animal, or a delivery/package? " +
         "Start your answer with 'PEOPLE: <number>' then 'IMPORTANT: yes' or 'IMPORTANT: no'.",
       max_tokens: 120,
@@ -153,7 +153,7 @@ export async function sendDigest(env: Env): Promise<string> {
 
   const gallery = `${base}/?important=1`;
   const html = `<div style="font-family:system-ui,Arial,sans-serif;max-width:680px;margin:0 auto;color:#111">
-    <h2 style="margin:0 0 4px">Security Cam daily digest</h2>
+    <h2 style="margin:0 0 4px">Pet Cam daily digest</h2>
     <p style="color:#555;margin:0 0 16px">${when}</p>
     <p><b>${rows.length}</b> important item(s) in the last 24h — <b>${photos}</b> photo(s), <b>${clips}</b> clip(s).<br>
     Detected: ${esc(topLabels)}.</p>
@@ -166,13 +166,13 @@ export async function sendDigest(env: Env): Promise<string> {
       <p style="color:#888;font-size:12px;margin-top:10px">Links require your viewer sign-in. Showing up to 40 of ${rows.length}.</p>`
     : `<p style="color:#555">Nothing flagged important today. The camera is still recording and storing footage normally.</p>`}
   </div>`;
-  const text = `Security Cam daily digest — ${when}\n${rows.length} important item(s): ${photos} photos, ${clips} clips.\n`
+  const text = `Pet Cam daily digest — ${when}\n${rows.length} important item(s): ${photos} photos, ${clips} clips.\n`
     + `Detected: ${topLabels}\nView: ${gallery}\n`;
 
   await env.EMAIL.send({
     to: env.DIGEST_TO,
     from: env.DIGEST_FROM,
-    subject: `Security Cam: ${rows.length} important item(s) in the last 24h`,
+    subject: `Pet Cam: ${rows.length} important item(s) in the last 24h`,
     html,
     text,
   });

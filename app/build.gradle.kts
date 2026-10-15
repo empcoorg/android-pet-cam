@@ -17,11 +17,11 @@ plugins {
 }
 
 android {
-    namespace = "org.empco.securitycam"
+    namespace = "org.empco.petcam"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "org.empco.securitycam"
+        applicationId = "org.empco.petcam"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

@@ -1,4 +1,4 @@
 <resources>
-    <string name="app_name">Security Cam</string>
+    <string name="app_name">Pet Cam</string>
     <string name="notif_channel">Background service</string>
 </resources>

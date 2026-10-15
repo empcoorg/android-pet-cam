@@ -35,8 +35,8 @@ input.code{font:600 22px/1 ui-monospace,monospace;letter-spacing:4px;text-align:
 
 export function loginPage(error: boolean): string {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Security Cam</title><style>${CSS}</style></head><body><div class="wrap"><form class="login panel" method="post" action="/login">
-<h1>Security Cam</h1><p class="muted">Enter the viewer password to see the camera.</p>
+<title>Pet Cam</title><style>${CSS}</style></head><body><div class="wrap"><form class="login panel" method="post" action="/login">
+<h1>Pet Cam</h1><p class="muted">Enter the viewer password to see the camera.</p>
 ${error ? '<p class="err">Wrong password.</p>' : ""}
 <input type="password" name="password" placeholder="Password" autofocus required autocomplete="current-password">
 <button type="submit">Sign in</button></form></div></body></html>`;
@@ -44,7 +44,7 @@ ${error ? '<p class="err">Wrong password.</p>' : ""}
 
 export function totpSetupPage(otpauthUri: string, secretBase32: string, qrSvg: string, error: boolean): string {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Security Cam</title><style>${CSS}</style></head><body><div class="wrap"><form class="login panel" method="post" action="/totp-setup">
+<title>Pet Cam</title><style>${CSS}</style></head><body><div class="wrap"><form class="login panel" method="post" action="/totp-setup">
 <h1>Set up an authenticator app</h1>
 <p class="muted">This browser hasn't been verified before. Scan this once with Google Authenticator (or any TOTP app), then enter the 6-digit code it shows to finish.</p>
 <div class="qrbox">${qrSvg}</div>
@@ -57,7 +57,7 @@ ${error ? '<p class="err">Wrong code. Try the current one from the app.</p>' : "
 
 export function totpVerifyPage(error: boolean): string {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Security Cam</title><style>${CSS}</style></head><body><div class="wrap"><form class="login panel" method="post" action="/totp-verify">
+<title>Pet Cam</title><style>${CSS}</style></head><body><div class="wrap"><form class="login panel" method="post" action="/totp-verify">
 <h1>Enter your authenticator code</h1>
 <p class="muted">This browser hasn't been verified before. Enter the 6-digit code from your authenticator app.</p>
 ${error ? '<p class="err">Wrong code. Try the current one from the app.</p>' : ""}
@@ -68,8 +68,8 @@ ${error ? '<p class="err">Wrong code. Try the current one from the app.</p>' : "
 
 export function appPage(): string {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Security Cam</title><style>${CSS}</style></head><body><div class="wrap">
-<header><h1>Security Cam <span id="label" class="muted"></span></h1>
+<title>Pet Cam</title><style>${CSS}</style></head><body><div class="wrap">
+<header><h1>Pet Cam <span id="label" class="muted"></span></h1>
 <div class="row"><span id="conn" class="badge off">connecting…</span>
 <form method="post" action="/logout" style="margin:0"><button class="ghost" type="submit">Sign out</button></form></div></header>
 
@@ -77,10 +77,10 @@ export function appPage(): string {
   <b>No camera is online.</b> To use this phone as the camera:
   <ol style="margin:6px 0 10px 18px;padding:0;line-height:1.7">
     <li>Tap the button below and open the downloaded file. Allow installing from this source if asked.</li>
-    <li>Open Security Cam, grant permissions, go to <b>Settings → Remote access</b> and paste the token (Copy button below).</li>
+    <li>Open Pet Cam, grant permissions, go to <b>Settings → Remote access</b> and paste the token (Copy button below).</li>
     <li>Type the server URL, turn on <i>Upload</i> and <i>Live view</i>, go to <b>Camera</b> and tap <b>Start</b>.</li>
   </ol>
-  <div class="row"><a class="btn" href="/app.apk" style="font-size:16px;padding:12px 16px">⬇ Install Security Cam on this phone</a>
+  <div class="row"><a class="btn" href="/app.apk" style="font-size:16px;padding:12px 16px">⬇ Install Pet Cam on this phone</a>
     <button class="ghost" id="copyTok2">Copy device token</button> <span class="muted" id="copyTok2Msg"></span></div>
 </div>
 
@@ -131,8 +131,8 @@ export function appPage(): string {
   <div id="setup" hidden style="margin-top:10px;font-size:14px">
     <ol style="margin:0 0 10px 18px;padding:0;line-height:1.7">
       <li>On the phone, open this page in the browser and sign in.</li>
-      <li><a class="btn" href="/app.apk">Download the Security Cam app (APK)</a> <span class="muted">— allow installing from this source if asked.</span></li>
-      <li>Open Security Cam → <b>Settings</b> → <b>Remote access</b>, paste these two values, enable <i>Upload</i> and <i>Live view</i>.</li>
+      <li><a class="btn" href="/app.apk">Download the Pet Cam app (APK)</a> <span class="muted">— allow installing from this source if asked.</span></li>
+      <li>Open Pet Cam → <b>Settings</b> → <b>Remote access</b>, paste these two values, enable <i>Upload</i> and <i>Live view</i>.</li>
     </ol>
     <div class="kv"><dt>Worker URL</dt><dd><code id="suUrl"></code> <button class="ghost" data-copy="suUrl">Copy</button></dd>
       <dt>Device token</dt><dd><code id="suTok" style="word-break:break-all"></code> <button class="ghost" data-copy="suTok">Copy</button></dd></div>
@@ -261,7 +261,7 @@ export function appPage(): string {
   }
 
   let viewRot = 0;
-  try { viewRot = (parseInt(localStorage.getItem('securitycam_rot') || '0', 10) || 0) % 360; } catch (e) {}
+  try { viewRot = (parseInt(localStorage.getItem('petcam_rot') || '0', 10) || 0) % 360; } catch (e) {}
   function applyRotation() {
     const base = (status && status.liveRotation) || 0;
     const rot = ((base + viewRot) % 360 + 360) % 360;
@@ -278,7 +278,7 @@ export function appPage(): string {
   for (const b of document.querySelectorAll('[data-orient]')) b.onclick = () => cmd('setOrientation', b.dataset.orient);
   $('rotate').onclick = () => {
     viewRot = (viewRot + 90) % 360;
-    try { localStorage.setItem('securitycam_rot', String(viewRot)); } catch (e) {}
+    try { localStorage.setItem('petcam_rot', String(viewRot)); } catch (e) {}
     applyRotation();
   };
   window.addEventListener('resize', applyRotation);

@@ -1,10 +1,10 @@
 <resources>
-    <style name="Theme.SecurityCam" parent="android:Theme.Material.NoActionBar">
+    <style name="Theme.PetCam" parent="android:Theme.Material.NoActionBar">
         <item name="android:windowBackground">@android:color/black</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
     </style>
-    <style name="Theme.SecurityCam.Player" parent="Theme.SecurityCam">
+    <style name="Theme.PetCam.Player" parent="Theme.PetCam">
         <item name="android:windowFullscreen">true</item>
     </style>
 </resources>
