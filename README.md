@@ -2,7 +2,7 @@
 
 An old Android phone is worth almost nothing these days. It can become a **private, encrypted
 security camera** — no proprietary third-party servers, no accounts, no subscriptions. Footage is
-recorded to the phone's own storage (or its SD card) and stays there unless *you* choose a server
+recorded to the phone's own storage (or its SD card) and stays there unless you choose a server
 to sync it to.
 
 Works on a wide range of devices — Android 8.0+ (API 26), front or back camera, portrait or
