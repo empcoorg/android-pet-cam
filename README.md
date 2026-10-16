@@ -20,7 +20,7 @@ sideways mounting — and automatically switches to a reduced-load profile on lo
 Everything in this section is optional except steps 1–6; the app is fully usable with **no server
 at all**.
 
-### On your computer
+### On macOS
 
 1. Install [Android Studio](https://developer.android.com/studio) (it bundles the JDK and Android
    SDK). Open it, choose **Open**, and pick this repo's root folder (not `app/`). Wait for the
