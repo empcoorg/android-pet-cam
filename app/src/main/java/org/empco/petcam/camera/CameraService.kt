@@ -116,6 +116,7 @@ class CameraService : LifecycleService(), LiveLink.Listener {
         const val NOTIF_ID = 1
         private const val MAX_MOTION_CLIP_MS = 10 * 60_000L
         private const val WARMUP_MS = 1500L
+        private const val RETENTION_INTERVAL_MS = 60_000L
 
         private val _status = MutableStateFlow(Status())
         val status: StateFlow<Status> = _status
@@ -212,7 +213,7 @@ class CameraService : LifecycleService(), LiveLink.Listener {
         acquireWakeLock()
         startForegroundCompat()
         _status.value = Status(
-            running = true, mode = currentConfig.mode, usedBytes = store.usedBytes(),
+            running = true, mode = currentConfig.mode,
             freeBytes = store.freeBytes(), storageLocation = store.locationLabel, lowEnd = lowEnd,
         )
 
@@ -226,6 +227,7 @@ class CameraService : LifecycleService(), LiveLink.Listener {
             }
         }
         ioExecutor.execute { UploadWorker.enqueuePending(this) }
+        refreshUsage()
         mainHandler.postDelayed(ticker, 1_000)
         AppUpdater.checkInBackground(this)
     }
@@ -950,20 +952,53 @@ class CameraService : LifecycleService(), LiveLink.Listener {
         if (continueNow) startRecording()
     }
 
-    /** Retention + upload for a finished file. */
+    /** Upload + retention for a finished file. */
     private fun afterFileWritten(file: File) {
-        val cfg = currentConfig
-        val exclude = recordingFile
-        ioExecutor.execute {
-            try {
-                store.enforceLimit(cfg.storageLimitBytes, cfg.minFreePercent, exclude)
-                val used = store.usedBytes()
-                val free = store.freeBytes()
-                mainHandler.post { update { copy(usedBytes = used, freeBytes = free) } }
-                if (file.exists()) UploadWorker.enqueue(this, file)
-            } catch (e: Exception) {
-                Log.w(TAG, "post-write housekeeping failed", e)
+        // Queued straight away: the upload must never wait behind retention, which lists every file.
+        UploadWorker.enqueue(this, file)
+        val len = file.length()
+        update { copy(usedBytes = usedBytes + len) }
+        scheduleRetention()
+    }
+
+    private var retentionQueued = false
+    private var lastRetentionAt = 0L
+
+    /**
+     * Coalesced retention: at most one pass queued, at most one per [RETENTION_INTERVAL_MS]. A pass
+     * per file let slow passes (minutes each on a phone holding tens of thousands of files) pile up
+     * on [ioExecutor] without bound while photos kept arriving every few seconds.
+     */
+    private fun scheduleRetention() {
+        if (retentionQueued) return
+        retentionQueued = true
+        val wait = (lastRetentionAt + RETENTION_INTERVAL_MS - SystemClock.elapsedRealtime()).coerceAtLeast(0L)
+        mainHandler.postDelayed({
+            if (closing) return@postDelayed
+            val cfg = currentConfig
+            val exclude = recordingFile
+            val s = store
+            ioExecutor.execute {
+                try {
+                    val used = s.enforceLimit(cfg.storageLimitBytes, cfg.minFreePercent, exclude)
+                    val free = s.freeBytes()
+                    mainHandler.post { update { copy(usedBytes = if (used >= 0) used else usedBytes, freeBytes = free) } }
+                } catch (e: Exception) {
+                    Log.w(TAG, "retention failed", e)
+                } finally {
+                    mainHandler.post { retentionQueued = false; lastRetentionAt = SystemClock.elapsedRealtime() }
+                }
             }
+        }, wait)
+    }
+
+    /** Re-measure footage size off the main thread (a full listing). */
+    private fun refreshUsage() {
+        val s = store
+        ioExecutor.execute {
+            val used = s.usedBytes()
+            val free = s.freeBytes()
+            mainHandler.post { update { copy(usedBytes = used, freeBytes = free) } }
         }
     }
 
@@ -1138,7 +1173,8 @@ class CameraService : LifecycleService(), LiveLink.Listener {
         if (old.night != cfg.night) nightVision.setMode(cfg.night)
         if (old.useSdCard != cfg.useSdCard) {
             store = ClipStore(this)
-            update { copy(usedBytes = store.usedBytes(), freeBytes = store.freeBytes(), storageLocation = store.locationLabel) }
+            update { copy(storageLocation = store.locationLabel) }
+            refreshUsage()
         }
         // Switching VIDEO<->PHOTO_ONLY always needs a rebind (completely different use-case set).
         // Within PHOTO_ONLY, switching trigger also does: MOTION binds an extra ImageAnalysis

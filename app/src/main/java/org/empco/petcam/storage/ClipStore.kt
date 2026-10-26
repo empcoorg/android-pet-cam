@@ -99,8 +99,31 @@ class ClipStore(context: Context) {
             .sortedByDescending { it.startTime }
     }
 
-    fun pendingUploads(): List<File> =
-        allFiles().filter { isMedia(it) && !markerFor(it).exists() }.sortedBy { it.lastModified() }
+    /** Not yet uploaded, oldest first (names start with the capture time, so no per-file stat). */
+    fun pendingUploads(): List<File> {
+        val (media, names) = scanMedia()
+        return media.filter { it.name + UPLOADED_SUFFIX !in names }.sortedBy { it.name }
+    }
+
+    /**
+     * Media files in both directories plus the name of every entry beside them, so a file's
+     * `.uploaded` marker is a set lookup rather than a filesystem call. A listing is one cheap
+     * pass; per-file calls are not once a phone holds tens of thousands of files.
+     */
+    private fun scanMedia(): Pair<List<File>, Set<String>> {
+        val media = ArrayList<File>()
+        val names = HashSet<String>()
+        for (dir in listOf(videosDir, photosDir)) {
+            dir.listFiles()?.forEach { f ->
+                names.add(f.name)
+                if (isMediaName(f.name)) media.add(f)
+            }
+        }
+        return media to names
+    }
+
+    private fun isMediaName(name: String) = !name.endsWith(UPLOADED_SUFFIX) &&
+        (name.endsWith(".mp4", true) || name.endsWith(".jpg", true))
 
     private fun toClip(f: File, type: ClipType): Clip {
         val start = try {
@@ -109,8 +132,8 @@ class ClipStore(context: Context) {
         return Clip(f, type, start, f.length(), markerFor(f).exists())
     }
 
-    fun usedBytes(): Long =
-        allFiles().filter { it.isFile }.sumOf { it.length() }
+    /** Full listing: call off the main thread. */
+    fun usedBytes(): Long = scanMedia().first.sumOf { it.length() }
 
     fun delete(clip: Clip) = delete(clip.file)
 
@@ -129,29 +152,37 @@ class ClipStore(context: Context) {
      * Delete oldest media while free space on the storage is below [minFreePercent] of its
      * capacity, or (if [limitBytes] > 0) while our own footage exceeds that cap.
      * [exclude] is the file currently being written and is never deleted.
+     *
+     * Returns our footage total after the pass, or -1 when there was nothing to check: with no cap
+     * and enough free space (the usual case) it answers from StatFs alone, without listing files.
      */
-    fun enforceLimit(limitBytes: Long, minFreePercent: Int, exclude: File?): Int {
-        // Already-uploaded footage goes first (it is safe in the cloud), then oldest.
-        val files = allFiles().filter { isMedia(it) && it != exclude }
-            .sortedWith(compareBy<File>({ !markerFor(it).exists() }, { it.lastModified() }))
+    fun enforceLimit(limitBytes: Long, minFreePercent: Int, exclude: File?): Long {
         val total = totalBytes()
         val minFree = total * minFreePercent.coerceIn(0, 90) / 100
-        var used = usedBytes()
         var free = freeBytes()
-        var removed = 0
-        for (f in files) {
+        if (limitBytes <= 0 && !(total > 0 && free < minFree)) return -1
+
+        // Sort keys are read once per file, never inside the comparator: a comparator that stats
+        // files makes this O(n log n) filesystem calls, minutes per pass on a slow phone.
+        val (media, names) = scanMedia()
+        val entries = media.map { RetentionEntry(it, it.name + UPLOADED_SUFFIX in names, it.length()) }
+        var used = entries.sumOf { it.size }
+        // Already-uploaded footage goes first (it is safe in the cloud), then oldest.
+        val victims = entries.filter { it.file != exclude }
+            .sortedWith(compareBy<RetentionEntry>({ !it.uploaded }, { it.file.name }))
+        for (v in victims) {
             val overCap = limitBytes > 0 && used > limitBytes
             val lowSpace = total > 0 && free < minFree
             if (!overCap && !lowSpace) break
-            val len = f.length()
-            Log.i(TAG, "Retention: deleting ${f.name} (${len / 1024} KB) free=${free / 1048576}MB used=${used / 1048576}MB")
-            delete(f)
-            used -= len
-            free += len
-            removed++
+            Log.i(TAG, "Retention: deleting ${v.file.name} (${v.size / 1024} KB) free=${free / 1048576}MB used=${used / 1048576}MB")
+            delete(v.file)
+            used -= v.size
+            free += v.size
         }
-        return removed
+        return used
     }
+
+    private data class RetentionEntry(val file: File, val uploaded: Boolean, val size: Long)
 
     /** Copies the clip into the public Movies/PetCam or Pictures/PetCam collection. */
     fun saveToGallery(clip: Clip): Boolean {
