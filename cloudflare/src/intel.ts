@@ -127,6 +127,8 @@ export async function sendDigest(env: Env): Promise<string> {
     "SELECT key, type, ts, labels, description FROM important WHERE ts >= ? ORDER BY ts DESC LIMIT 200",
   ).bind(since).all<ImportantRow>();
   const rows = r.results;
+  // A quiet day is not worth an email; the offline watchdog covers a camera that has stopped.
+  if (rows.length === 0) return "nothing important in the last 24h: digest skipped";
   const base = (env.PUBLIC_URL ?? "").replace(/\/$/, "");
   const photos = rows.filter((x) => x.type === "photo").length;
   const clips = rows.filter((x) => x.type === "video").length;
