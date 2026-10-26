@@ -749,15 +749,20 @@ class CameraService : LifecycleService(), LiveLink.Listener {
             val wantLive = !busy && liveViewers > 0 && liveLink.connected &&
                 now - lastLiveAt >= 1000L / cfg.liveFps.coerceIn(1, maxLiveFps)
             if (wantLive) {
-                // Raw sensor-orientation JPEG straight from the YUV buffer (no bitmap decode/rotate);
-                // the viewer rotates it with CSS using liveRotation from the status message.
                 lastLiveAt = now
-                val rot = image.imageInfo.rotationDegrees
+                // When the timestamp is burned into recordings, the live view carries the same stamp so
+                // the viewer sees what the footage looks like. That costs a decode + encode per frame
+                // (skipped on low-end phones) and the frame goes out upright, since the stamp belongs on
+                // the upright picture. Otherwise: raw sensor-orientation JPEG straight from the YUV
+                // buffer, rotated by the viewer with CSS using liveRotation from the status message.
+                val stampLive = cfg.burnTimestamp && cfg.canBurnTimestamp && !lowEnd
+                val rot = if (stampLive) 0 else image.imageInfo.rotationDegrees
                 if (rot != liveRotation) {
                     liveRotation = rot
                     mainHandler.post { update { copy(liveRotation = rot) }; pushLiveStatus() }
                 }
-                liveLink.sendFrame(YuvUtil.toJpeg(image, if (lowEnd) 45 else 60))
+                val stamped = if (stampLive) stampedLiveFrame(image, cfg.cameraLabel) else null
+                liveLink.sendFrame(stamped ?: YuvUtil.toJpeg(image, if (lowEnd) 45 else 60))
             }
             if (wantPreview) {
                 lastPreviewAt = now
@@ -772,6 +777,15 @@ class CameraService : LifecycleService(), LiveLink.Listener {
 
     private val stampFmt = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.US)
     private val stampDowFmt = java.text.SimpleDateFormat("EEE", java.util.Locale.US)
+
+    /** Upright live frame with the recording's timestamp drawn on; null if the frame could not be decoded. */
+    private fun stampedLiveFrame(image: ImageProxy, label: String): ByteArray? {
+        val bmp = YuvUtil.toBitmap(image, 60) ?: return null
+        drawStamp(bmp, label)
+        val jpeg = YuvUtil.bitmapToJpeg(bmp, 60)
+        bmp.recycle()
+        return jpeg
+    }
 
     /** Burn date/time + label into a bitmap (software), for stills when not using the GL overlay. */
     private fun drawStamp(bmp: Bitmap, label: String, at: Long = System.currentTimeMillis()) {
@@ -1303,6 +1317,8 @@ class CameraService : LifecycleService(), LiveLink.Listener {
             .put("lowEnd", s.lowEnd)
             .put("audioOn", s.audioOn)
             .put("highRes", currentConfig.highRes)
+            .put("burnTimestamp", cfg.burnTimestamp)
+            .put("canBurnTimestamp", cfg.canBurnTimestamp)
             .put("profile", currentConfig.profile.name.lowercase())
             .put("limitBytes", cfg.storageLimitBytes)
             .put("night", s.night)

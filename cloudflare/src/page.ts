@@ -425,7 +425,9 @@ export function appPage(): string {
 
   setInterval(() => {
     const lc = $('liveclock');
-    const show = status && (status.profile === 'hires_live' || status.profile === 'max') && deviceOnline && !frame.hidden;
+    // Hidden when the stamp is burned in: the phone then draws it on the live frames themselves.
+    const burned = status && status.burnTimestamp && status.canBurnTimestamp;
+    const show = status && (status.profile === 'hires_live' || status.profile === 'max') && !burned && deviceOnline && !frame.hidden;
     lc.style.display = show ? 'block' : 'none';
     if (show) {
       const now = new Date();

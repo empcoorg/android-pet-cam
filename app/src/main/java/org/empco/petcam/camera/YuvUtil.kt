@@ -61,15 +61,19 @@ object YuvUtil {
         return bos.toByteArray()
     }
 
-    /** Upright bitmap (rotation metadata applied). */
+    /** Upright, mutable bitmap (rotation metadata applied); callers draw stamps and night boosts on it. */
     fun toBitmap(image: ImageProxy, quality: Int = 75): Bitmap? {
         val jpeg = toJpeg(image, quality)
-        val bmp = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.size) ?: return null
+        // Decoded bitmaps are immutable by default and Canvas refuses them (drawStamp used to fail
+        // silently whenever the frame needed no rotation).
+        val opts = BitmapFactory.Options().apply { inMutable = true }
+        val bmp = BitmapFactory.decodeByteArray(jpeg, 0, jpeg.size, opts) ?: return null
         val rot = image.imageInfo.rotationDegrees
         if (rot == 0) return bmp
         val m = Matrix().apply { postRotate(rot.toFloat()) }
-        val rotated = Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, m, true)
+        var rotated = Bitmap.createBitmap(bmp, 0, 0, bmp.width, bmp.height, m, true)
         if (rotated !== bmp) bmp.recycle()
+        if (!rotated.isMutable) rotated = rotated.copy(Bitmap.Config.ARGB_8888, true).also { rotated.recycle() }
         return rotated
     }
 
