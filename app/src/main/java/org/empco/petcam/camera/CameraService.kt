@@ -1273,6 +1273,7 @@ class CameraService : LifecycleService(), LiveLink.Listener {
                     pushLiveStatus()
                 }
                 "status" -> pushLiveStatus()
+                "checkUpdate" -> AppUpdater.checkInBackground(this, force = true)
             }
         }
     }

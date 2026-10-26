@@ -30,9 +30,10 @@ object AppUpdater {
     private const val NOTIF_ID = 8
     private const val INTERVAL_MS = 6 * 60 * 60 * 1000L
 
-    fun checkInBackground(context: Context) {
+    /** [force] skips the 6 h interval (e.g. the portal's "Check for update" command). */
+    fun checkInBackground(context: Context, force: Boolean = false) {
         val app = context.applicationContext
-        Thread({ check(app) }, "petcam-update").start()
+        Thread({ check(app, force) }, "petcam-update").start()
     }
 
     @Synchronized

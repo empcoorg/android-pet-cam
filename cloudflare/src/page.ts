@@ -96,6 +96,7 @@ export function appPage(): string {
       <button id="modeCont" class="ghost">Continuous</button>
       <button id="snap">Take photo</button>
       <button class="ghost" id="rotate" title="Rotate the live view 90°">↻ Rotate view</button>
+      <button class="ghost" id="checkUpdate" title="Ask the phone to check for an app update now; if one is published it shows the install notification">Check for update</button>
       <span id="fps" class="muted"></span>
     </div>
     <div class="row" style="margin-top:6px">
@@ -290,6 +291,7 @@ export function appPage(): string {
   $('modeMotion').onclick = () => cmd('setMode', 'motion');
   $('modeCont').onclick = () => cmd('setMode', 'continuous');
   $('snap').onclick = () => cmd('snapshot');
+  $('checkUpdate').onclick = () => cmd('checkUpdate');
   $('applyInterval').onclick = () => {
     const msg = $('intervalMsg');
     const iv = parseInt($('photoInterval').value, 10);
