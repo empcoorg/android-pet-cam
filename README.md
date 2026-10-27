@@ -143,6 +143,38 @@ android-pet-cam/
 * Files are named by local start time, e.g. `videos/2026-10-05_17-03-22_motion.mp4`,
   `photos/2026-10-05_17-03-25_photo.jpg`.
 
+## Development
+
+**Tests.** Both halves have fast tests that need no phone, emulator or Cloudflare account:
+
+* Android: `./gradlew :app:testDebugUnitTest` — JVM unit tests for the file logic in
+  `storage/Footage.kt` (which files are footage, upload order, what retention deletes and in
+  which order).
+* Worker: `cd cloudflare && npm install && npm run check && npm test` — type-check, then tests that
+  run inside the Workers runtime (Durable Object, D1) through `@cloudflare/vitest-plugin`, using
+  the local-only bindings in `wrangler.test.jsonc`: device/viewer authentication, online/offline
+  messages, status replay, command forwarding, and the daily digest.
+
+**CI.** `.github/workflows/ci.yml` runs both suites, builds the debug APK and does a
+`wrangler deploy --dry-run` on every push to `main` and every pull request.
+
+**Releases.** Tag a commit on `main` as `vX.Y.Z` and push the tag. `.github/workflows/release.yml`
+builds the app with that version (`versionName` from the tag, `versionCode` from the commit count),
+runs the unit tests, and publishes a GitHub Release carrying `pet-cam-X.Y.Z.apk` and the
+`version.json` the app's update check reads. The APK is debug-signed — the same kind the quick
+start installs and the Worker serves over the air; it is not for app stores.
+
+To offer a release over the air from your own Worker, copy both files into its bucket:
+
+```bash
+npx wrangler r2 object put <bucket>/app/pet-cam.apk --file pet-cam-X.Y.Z.apk \
+  --content-type application/vnd.android.package-archive --remote
+npx wrangler r2 object put <bucket>/app/version.json --file version.json --content-type application/json --remote
+```
+
+Phones look for an update every 6 hours, or right away when you press **Check for update** in
+the portal.
+
 ## License
 
 [MIT](LICENSE) — use it, fork it, ship it.

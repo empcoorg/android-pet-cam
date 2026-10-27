@@ -1,0 +1,46 @@
+name: Release
+
+# Tag a commit on main as vX.Y.Z and push the tag. This builds the app with that version, runs the
+# unit tests, and publishes a GitHub Release carrying the APK and the version.json the app's
+# over-the-air update check reads. Publishing those two files to a Worker's bucket stays a manual
+# step (see README, "Releases").
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    name: Build and publish APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # versionCode is the commit count, so the whole history is needed
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Version from the tag
+        id: v
+        run: |
+          echo "name=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          echo "code=$(git rev-list --count HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Test and build
+        run: >
+          ./gradlew :app:testDebugUnitTest :app:assembleDebug --no-daemon
+          -PversionName=${{ steps.v.outputs.name }} -PversionCode=${{ steps.v.outputs.code }}
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/debug/app-debug.apk "dist/pet-cam-${{ steps.v.outputs.name }}.apk"
+          printf '{"versionCode":%s,"versionName":"%s","published":%s000}\n' \
+            "${{ steps.v.outputs.code }}" "${{ steps.v.outputs.name }}" "$(date +%s)" > dist/version.json
+          cat dist/version.json
+      - name: GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --title "$GITHUB_REF_NAME" --generate-notes

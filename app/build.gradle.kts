@@ -24,8 +24,10 @@ android {
         applicationId = "org.empco.petcam"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        // Releases take these from the git tag (see .github/workflows/release.yml):
+        //   ./gradlew :app:assembleDebug -PversionName=1.2.3 -PversionCode=42
+        versionCode = (project.findProperty("versionCode") as String?)?.toIntOrNull() ?: 1
+        versionName = (project.findProperty("versionName") as String?)?.ifBlank { null } ?: "1.0"
         buildConfigField("String", "CLOUD_URL", "\"${key("CLOUD_URL")}\"")
         buildConfigField("String", "DEVICE_TOKEN", "\"${key("DEVICE_TOKEN")}\"")
     }
