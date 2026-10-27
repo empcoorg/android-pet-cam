@@ -79,4 +79,6 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.work.runtime.ktx)
     implementation(libs.coroutines.android)
+
+    testImplementation(libs.junit)
 }
