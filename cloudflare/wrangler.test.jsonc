@@ -1,0 +1,22 @@
+// Local-only bindings used by `npm test` (vitest + @cloudflare/vitest-pool-workers) and by the CI
+// deploy dry-run. Nothing here reaches a Cloudflare account: no AI, no email, no crons, and the
+// secrets are test values set in vitest.config.ts. The real per-camera config is wrangler.jsonc
+// (git-ignored), copied from wrangler.jsonc.template.
+{
+  "name": "pet-cam-test",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-05",
+  "compatibility_flags": ["nodejs_compat"],
+  "r2_buckets": [{ "binding": "BUCKET", "bucket_name": "pet-cam-test-clips" }],
+  "d1_databases": [{ "binding": "DB", "database_name": "pet-cam-test-catalog", "database_id": "00000000-0000-0000-0000-000000000000" }],
+  "durable_objects": { "bindings": [{ "name": "ROOM", "class_name": "CameraRoom" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["CameraRoom"] }],
+  "vars": {
+    "MAX_STORAGE_BYTES": "5368709120",
+    "SESSION_TTL_SECONDS": "2592000",
+    "PUBLIC_URL": "http://localhost",
+    "CAMERA_UTC_OFFSET_MINUTES": "0",
+    "OFFLINE_ALERT_MINUTES": "10",
+    "CAMERA_LABEL": "test"
+  }
+}
