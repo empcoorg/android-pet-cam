@@ -1,7 +1,7 @@
 # Android Pet Cam
 
 An old Android phone is worth almost nothing these days — but point it at your furry friends and
-it becomes a **private pet camera**. Check in on the cat from work, catch the dog mid-afternoon,
+it becomes a **secure pet camera**. Check in on the cat from work, catch the dog mid-afternoon,
 or see who's been on the sofa — with a **live stream**, **motion-triggered video**, or **timed
 still images**. No proprietary third-party servers, no accounts, no subscriptions: footage is
 recorded to the phone's own storage (or its SD card) and stays there unless you choose a server
